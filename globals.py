@@ -5,7 +5,7 @@ VALID_TAG_COMBINATIONS = [
     ("desert", "survival", "hard", "outdoor"),
     ("dungeon", "treasure", "medium", "underground"),
     ("mountain", "climbing", "hard", "outdoor"),
-    ("village", "social", "easy", "indoor"),
+    ("village", "social", "easy", "indoor")
     #can add more
 ]
 
