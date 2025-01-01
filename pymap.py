@@ -496,7 +496,7 @@ class Dungeon:
 
         # ATTENTION: it is very bad decission, to store objects by links in two different parent objects
         #            beteer solution will be to store threre ID's or something similar
-        new_corridor = Corridor(dungeon_door, new_room_door, corridor_path)
+        #new_corridor = Corridor(dungeon_door, new_room_door, corridor_path)
 
         #self.corridors.append(new_corridor)
 
@@ -532,6 +532,28 @@ class Dungeon:
                 if corridor_path:
                     self.corridors.append(Corridor(best_u_border, best_v_border, corridor_path))
 
+def extract_meta_rooms(graph:CompleteDungeonGraph):
+    meta_rooms = []
+
+    for node_index in range(len(graph.graph.nodes)):
+        meta_rooms.append(graph.graph.nodes[node_index]['room']) 
+
+    return meta_rooms
+
+def draw_legend(dungeon, graph, meta_rooms):
+    legend_entries = []
+
+    for index, room in enumerate(dungeon.rooms):
+        meta_room = meta_rooms[index]
+        meta_tags = f"Theme: {meta_room.theme_tag}, Function: {meta_room.function_tag}, " \
+                    f"Difficulty: {meta_room.difficulty_tag}, Environment: {meta_room.environment_tag}"
+        legend_entries.append((room.color, meta_tags))
+
+    for color, label in legend_entries:
+        pyplot.plot([], [], color=color, label=label, linewidth=5)
+
+    pyplot.legend(loc='upper right', title='Room Legend')
+
 graph = CompleteDungeonGraph(arguments.rooms)
 mst = MaximumSpanningTree(graph)
 dungeon = Dungeon(mst)
@@ -543,9 +565,9 @@ for i in range(arguments.rooms):
     
 dungeon.connect_rooms_via_mst()
 
-pyplot.axes().set_aspect('equal', 'datalim')
+pyplot.axes().set_aspect('auto')
 
-fig = pyplot.figure(1)
+fig = pyplot.figure(figsize=(12, 12))
 
 for room in dungeon.rooms:
     borders = list(room.geometry_borders())
@@ -563,6 +585,10 @@ if arguments.show_doors:
 
 for corridor in dungeon.corridors:
     pyplot.plot(*zip(*corridor.geometry_segments()), color='#000000', linewidth=3, alpha=1, zorder=0)
+
+meta_rooms = extract_meta_rooms(graph)
+
+draw_legend(dungeon, graph, meta_rooms)
 
 if arguments.filename:
     pyplot.savefig(arguments.filename)
