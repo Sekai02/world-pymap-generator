@@ -4,10 +4,10 @@ from itertools import combinations
 from complete_dungeon_graph import CompleteDungeonGraph
 
 class MaximumSpanningTree:
-    def __init__(self, dungeon_graph: CompleteDungeonGraph):
+    def __init__(self, dungeon_graph):
         self._mst, self._cost = self._calculate_mst(dungeon_graph.graph)
 
-    def _calculate_mst(self, graph: nx.Graph) -> tuple[nx.Graph, float]:
+    def _calculate_mst(self, graph):
         edges = list(graph.edges(data=True))
         nodes = list(graph.nodes(data=True))
 
@@ -53,8 +53,8 @@ class MaximumSpanningTree:
 
         return mst_graph, total_cost
 
-    def get_mst(self) -> nx.Graph:
+    def get_mst(self):
         return self._mst
 
-    def get_cost(self) -> float:
+    def get_cost(self):
         return self._cost
