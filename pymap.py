@@ -5,6 +5,7 @@ import argparse
 import collections
 
 from matplotlib import pyplot
+from matplotlib import gridspec
 from complete_dungeon_graph import CompleteDungeonGraph
 from maximum_spanning_tree import MaximumSpanningTree
 
@@ -510,7 +511,7 @@ class Dungeon:
             room_u = self.rooms[u]
             room_v = self.rooms[v]
 
-            # Find the closest pair of borders between room_u and room_v
+            #find the closest pair of borders between room_u and room_v
             closest_distance = float('inf')
             best_u_border, best_v_border = None, None
 
@@ -558,6 +559,9 @@ graph = CompleteDungeonGraph(arguments.rooms)
 mst = MaximumSpanningTree(graph)
 dungeon = Dungeon(mst)
 
+#debug edges
+mst.debug_print_edges()
+
 for i in range(arguments.rooms):
     print('generate room', i + 1)
     dungeon.expand(blocks=arguments.blocks,
@@ -567,28 +571,53 @@ dungeon.connect_rooms_via_mst()
 
 pyplot.axes().set_aspect('auto')
 
-fig = pyplot.figure(figsize=(12, 12))
+fig = pyplot.figure(figsize=(16, 16))
+gs = gridspec.GridSpec(2, 1, height_ratios=[4, 1])
 
-for room in dungeon.rooms:
+ax1 = fig.add_subplot(gs[0])
+ax1.set_aspect('auto')
+
+for idx, room in enumerate(dungeon.rooms):
     borders = list(room.geometry_borders())
-
-    pyplot.fill(*zip(*make_countur(borders)), '#ffffff')
-    pyplot.fill(*zip(*make_countur(borders)), room.color, alpha=0.5)
+    ax1.fill(*zip(*make_countur(borders)), '#ffffff')
+    ax1.fill(*zip(*make_countur(borders)), room.color, alpha=0.5)
 
     for border in borders:
-        pyplot.plot(*zip(*border), color=room.color, linewidth=3, alpha=1.0)
+        ax1.plot(*zip(*border), color=room.color, linewidth=3, alpha=1.0)
+
+    room_positions = room.block_positions()
+    centroid_x = sum(pos.x for pos in room_positions) / len(room_positions)
+    centroid_y = sum(pos.y for pos in room_positions) / len(room_positions)
+
+    ax1.text(centroid_x + 0.5, centroid_y + 0.5, str(idx + 1), color='black',
+             fontsize=12, ha='center', va='center', bbox=dict(facecolor='white', alpha=0.7))
 
 if arguments.show_doors:
     for room in dungeon.rooms:
         for door_border in room.door_borders():
-            pyplot.plot(*zip(*door_border.geometry_borders()), color=room.color, linewidth=6, alpha=0.5)
+            ax1.plot(*zip(*door_border.geometry_borders()), color=room.color, linewidth=6, alpha=0.5)
 
 for corridor in dungeon.corridors:
-    pyplot.plot(*zip(*corridor.geometry_segments()), color='#000000', linewidth=3, alpha=1, zorder=0)
+    ax1.plot(*zip(*corridor.geometry_segments()), color='#000000', linewidth=3, alpha=1, zorder=0)
 
+ax1.set_title("Dungeon Map")
+ax1.axis('on')
+
+ax2 = fig.add_subplot(gs[1])
 meta_rooms = extract_meta_rooms(graph)
 
-draw_legend(dungeon, graph, meta_rooms)
+legend_entries = []
+for index, room in enumerate(dungeon.rooms):
+    meta_room = meta_rooms[index]
+    meta_tags = f"{index + 1}. Theme: {meta_room.theme_tag}, Function: {meta_room.function_tag}, " \
+                f"Difficulty: {meta_room.difficulty_tag}, Environment: {meta_room.environment_tag}"
+    legend_entries.append((room.color, meta_tags))
+
+for color, label in legend_entries:
+    ax2.plot([], [], color=color, label=label, linewidth=5)
+
+ax2.legend(loc='center', title='Room Legend', ncol=2, frameon=False)
+ax2.axis('off')
 
 if arguments.filename:
     pyplot.savefig(arguments.filename)

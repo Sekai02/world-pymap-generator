@@ -58,3 +58,8 @@ class MaximumSpanningTree:
 
     def get_cost(self):
         return self._cost
+    
+    def debug_print_edges(self):
+        print("Edges in the MST:")
+        for u, v, data in self._mst.edges(data=True):
+            print(f"Edge ({u+1}, {v+1}) with weight {data['weight']}")

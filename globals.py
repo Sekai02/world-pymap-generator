@@ -47,6 +47,6 @@ difficulty_sim = {
 
 #weights for each tag
 w_t = 1.0
-w_f = 1.0
-w_e = 1.0
-w_d = 1.0
+w_f = 0.5
+w_e = 0.8
+w_d = 0.6
